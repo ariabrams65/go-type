@@ -50,13 +50,16 @@ func (m model) View() string {
     s := m.text
     if (m.index != len(m.text)) {
         p := termenv.ColorProfile()
-        cursor := termenv.String(string(m.text[m.index])).Foreground(p.Color("#000000")).Background(p.Color("#FFFFFF")).String()
-        incorrect := termenv.String(m.incorrect).Foreground(p.Color("#FF0000")).Underline().String()
-        completed := termenv.String(m.text[:m.index]).Foreground(p.Color("#FFFFFF")).String()
-        todo := termenv.String(m.text[m.index + 1:]).Foreground(p.Color("#808080")).String()
+        cursor := utils.ColorCursor(string(m.text[m.index]), p)
+        incorrect := utils.ColorIncorrectText(m.incorrect, p)
+        completed := utils.ColorCompletedText(m.text[:m.index], p)
+        todo := utils.ColorTodoText(m.text[m.index + 1:], p)
+
         s = completed + incorrect + cursor + todo
     }
-    return utils.WrapString(s, 20) + "\n\n" + strconv.Itoa(m.numCorrect()) + "\n"
+    s = utils.WrapString(s, 20)
+
+    return s + "\n\n" + strconv.Itoa(m.numCorrect()) + "\n"
 }
 
 func (m model) numCorrect() int {
