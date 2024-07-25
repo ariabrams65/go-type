@@ -1,11 +1,11 @@
 package tui
 
 import (
-	"strconv"
-	"strings"
+    "strconv"
+    "strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/muesli/termenv"
+    tea "github.com/charmbracelet/bubbletea"
+    "github.com/muesli/termenv"
     "github.com/ariabrams65/go-type/internal/tui/utils"
 )
 
@@ -21,7 +21,7 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
-    
+
     case tea.KeyMsg:
         key := msg.String()
         if key == "ctrl+c" {

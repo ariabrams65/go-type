@@ -1,12 +1,13 @@
 package main
 
 import (
-	"os"
+    "os"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/muesli/termenv"
+    tea "github.com/charmbracelet/bubbletea"
+    "github.com/muesli/termenv"
     "github.com/ariabrams65/go-type/internal/tui"
 )
+
 func main() {
     restoreConsole, err := termenv.EnableVirtualTerminalProcessing(termenv.DefaultOutput())
     if err != nil {
