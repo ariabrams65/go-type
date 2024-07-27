@@ -6,7 +6,6 @@ import (
 
     tea "github.com/charmbracelet/bubbletea"
     "github.com/muesli/termenv"
-    "github.com/ariabrams65/go-type/internal/tui/utils"
 )
 
 type model struct {
@@ -50,14 +49,14 @@ func (m model) View() string {
     s := m.text
     if (m.index != len(m.text)) {
         p := termenv.ColorProfile()
-        cursor := utils.ColorCursor(string(m.text[m.index]), p)
-        incorrect := utils.ColorIncorrectText(m.incorrect, p)
-        completed := utils.ColorCompletedText(m.text[:m.index], p)
-        todo := utils.ColorTodoText(m.text[m.index + 1:], p)
+        cursor := colorCursor(string(m.text[m.index]), p)
+        incorrect := colorIncorrectText(m.incorrect, p)
+        completed := colorCompletedText(m.text[:m.index], p)
+        todo := colorTodoText(m.text[m.index + 1:], p)
 
         s = completed + incorrect + cursor + todo
     }
-    s = utils.WrapString(s, 20)
+    s = wrapString(s, 20)
 
     return s + "\n\n" + strconv.Itoa(m.numCorrect()) + "\n"
 }

@@ -1,4 +1,4 @@
-package utils
+package tui
 
 import (
     "fmt"
@@ -7,7 +7,7 @@ import (
 
 )
 
-func Log(s any) {
+func log(s any) {
     f, err := tea.LogToFile("debug.log", "debug")
     if err != nil {
         panic(err)
