@@ -1,17 +1,24 @@
 package tui
 
 import (
+    "encoding/json"
     "strconv"
     "strings"
 
     tea "github.com/charmbracelet/bubbletea"
     "github.com/muesli/termenv"
+    "github.com/ariabrams65/go-type/internal/messages"
 )
+
 
 type model struct {
     text string
     incorrect string
     index int
+    username string
+    encoder *json.Encoder
+    decoder *json.Decoder
+    err error
 }
 
 func (m model) Init() tea.Cmd {
@@ -20,28 +27,44 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
-
     case tea.KeyMsg:
-        key := msg.String()
-        if key == "ctrl+c" {
+        switch msg.Type {
+        case tea.KeyCtrlC:
             return m, tea.Quit
-        } else if key == "backspace" {
+
+        case tea.KeyBackspace:
             if len(m.incorrect) > 0 {
                 m.incorrect = m.incorrect[:len(m.incorrect)-1]
             } else if m.index > 0 {
                 m.index--
+                return m, sendMessage(messages.PositionMessage{
+                    Username: m.username,
+                    Index: m.index,
+                }, m.encoder)
             }            
-        } else if len(key) == 1 {
+
+        case tea.KeyRunes, tea.KeySpace:
+            key := msg.String()
             if key == string(m.text[m.index]) && len(m.incorrect) == 0 {
                 m.index++
                 if m.index == len(m.text) {
                     return m, tea.Quit
                 }
+                return m, sendMessage(messages.PositionMessage{
+                    Username: m.username,
+                    Index: m.index,
+                }, m.encoder)
             } else if key != " "{
                 m.incorrect += key
             }
         }
+
+    case errMsg:
+        m.err = msg.err
+        return m, tea.Quit
+        
     }
+
     return m, nil
 }
 
@@ -56,20 +79,37 @@ func (m model) View() string {
 
         s = completed + incorrect + cursor + todo
     }
-    s = wrapString(s, 20)
-
-    return s + "\n\n" + strconv.Itoa(m.numCorrect()) + "\n"
+    s = wrapString(s, 20) + "\n\n" + strconv.Itoa(m.numCorrect()) + "\n"
+    if m.err != nil {
+        s += m.err.Error() + "\n"
+    }
+    return s
 }
 
 func (m model) numCorrect() int {
     return m.index - strings.Count(m.text[:m.index], " ")
 }
 
+type errMsg struct {err error}
 
-func InitialModel() model {
+func sendMessage(m messages.Message, encoder *json.Encoder) tea.Cmd {
+    return func() tea.Msg {
+        err := messages.EncodeMessage(m, encoder)
+        if err != nil {
+            return errMsg{err}
+        }
+        return nil
+    }
+}
+
+func InitialModel(encoder *json.Encoder, decoder *json.Decoder) model {
     return model{
         text: "This is a test to see if this works lets see",
         incorrect: "",
         index: 0,
+        username: "user123",
+        encoder: encoder,
+        decoder: decoder,
     }
 }
+
