@@ -16,13 +16,21 @@ type model struct {
     incorrect string
     index int
     username string
+    roomname string
+    players map[string]int
     encoder *json.Encoder
     decoder *json.Decoder
     err error
 }
 
 func (m model) Init() tea.Cmd {
-    return nil
+    return tea.Batch(
+        sendMessage(messages.JoinMessage{
+            Username: m.username, 
+            Roomname: m.roomname,
+        }, m.encoder),
+        receiveMessage(m.decoder),
+    )
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -59,6 +67,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
         }
 
+    case messages.TextMessage:
+        m.text = msg.Text
+        return m, receiveMessage(m.decoder)
+
+    case messages.PositionMessage:
+        m.players[msg.Username] = msg.Index
+        return m, receiveMessage(m.decoder)
+        
     case errMsg:
         m.err = msg.err
         return m, tea.Quit
@@ -102,12 +118,24 @@ func sendMessage(m messages.Message, encoder *json.Encoder) tea.Cmd {
     }
 }
 
+func receiveMessage(decoder *json.Decoder) tea.Cmd {
+    return func() tea.Msg {
+        msg, err := messages.DecodeMessage(decoder)
+        if err != nil {
+            return errMsg{err}
+        }
+        return msg
+    }
+}
+
 func InitialModel(encoder *json.Encoder, decoder *json.Decoder) model {
     return model{
         text: "This is a test to see if this works lets see",
         incorrect: "",
         index: 0,
         username: "user123",
+        roomname: "room123",
+        players: make(map[string]int),
         encoder: encoder,
         decoder: decoder,
     }

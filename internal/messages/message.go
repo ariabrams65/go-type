@@ -11,7 +11,7 @@ type Message interface {
 
 type JoinMessage struct {
     Username string 
-    RoomName string
+    Roomname string
 }
 
 func (m JoinMessage) Type() string {
@@ -25,6 +25,14 @@ type PositionMessage struct {
 
 func (m PositionMessage) Type() string {
     return "position"
+}
+
+type TextMessage struct {
+    Text string
+}
+
+func (m TextMessage) Type() string {
+    return "text"
 }
 
 type frame struct {
@@ -63,6 +71,14 @@ func DecodeMessage(decoder *json.Decoder) (Message, error) {
 
     case "position":
         var m PositionMessage
+        err := json.Unmarshal(f.Data, &m)
+        if err != nil {
+            return nil, err
+        }
+        return m, nil
+
+    case "text":
+        var m TextMessage
         err := json.Unmarshal(f.Data, &m)
         if err != nil {
             return nil, err

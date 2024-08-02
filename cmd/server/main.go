@@ -33,6 +33,7 @@ func main() {
     // }
 
     decoder := json.NewDecoder(conn)
+    encoder := json.NewEncoder(conn)
     for {
         msg, err := messages.DecodeMessage(decoder)
         if err != nil {
@@ -41,6 +42,14 @@ func main() {
         switch msg := msg.(type) {
         case messages.PositionMessage:
             fmt.Print(msg.Index) 
+            messages.EncodeMessage(messages.TextMessage{
+                Text: fmt.Sprintf("This is the text being send back from the server. You are currently on index %d", msg.Index),
+            }, encoder)
+
+        case messages.JoinMessage:
+            fmt.Println()
+            fmt.Println(msg.Username)
+            fmt.Println(msg.Roomname)
         }
     }
 }
