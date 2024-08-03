@@ -2,12 +2,13 @@ package tui
 
 import (
     "encoding/json"
+    "net"
     "strconv"
     "strings"
 
+    "github.com/ariabrams65/go-type/internal/messages"
     tea "github.com/charmbracelet/bubbletea"
     "github.com/muesli/termenv"
-    "github.com/ariabrams65/go-type/internal/messages"
 )
 
 
@@ -128,16 +129,16 @@ func receiveMessage(decoder *json.Decoder) tea.Cmd {
     }
 }
 
-func InitialModel(encoder *json.Encoder, decoder *json.Decoder) model {
+func InitialModel(roomname string, username string, conn net.Conn) model {
     return model{
         text: "This is a test to see if this works lets see",
         incorrect: "",
         index: 0,
-        username: "user123",
-        roomname: "room123",
+        username: username,
+        roomname: roomname,
         players: make(map[string]int),
-        encoder: encoder,
-        decoder: decoder,
+        encoder: json.NewEncoder(conn),
+        decoder: json.NewDecoder(conn),
     }
 }
 

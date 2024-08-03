@@ -1,7 +1,6 @@
 package main
 
 import (
-    "encoding/json"
     "net"
     "os"
 
@@ -27,10 +26,7 @@ func main() {
         panic(err)
     }
 
-    encoder := json.NewEncoder(conn)
-    decoder := json.NewDecoder(conn)
-
-    p := tea.NewProgram(tui.InitialModel(encoder, decoder))
+    p := tea.NewProgram(tui.InitialModel("room123", "user123", conn))
     if _, err := p.Run(); err != nil {
         os.Exit(1)
     }
