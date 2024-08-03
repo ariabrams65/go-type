@@ -1,4 +1,4 @@
-go-type -r room_name
+go-type -r <roomname> -u <username>
 
 setup:
 

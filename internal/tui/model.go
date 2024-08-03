@@ -1,7 +1,6 @@
 package tui
 
 import (
-    "encoding/json"
     "net"
     "strconv"
     "strings"
@@ -19,8 +18,7 @@ type model struct {
     username string
     roomname string
     players map[string]int
-    encoder *json.Encoder
-    decoder *json.Decoder
+    conn net.Conn
     err error
 }
 
@@ -29,8 +27,8 @@ func (m model) Init() tea.Cmd {
         sendMessage(messages.JoinMessage{
             Username: m.username, 
             Roomname: m.roomname,
-        }, m.encoder),
-        receiveMessage(m.decoder),
+        }, m.conn),
+        receiveMessage(m.conn),
     )
 }
 
@@ -49,7 +47,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 return m, sendMessage(messages.PositionMessage{
                     Username: m.username,
                     Index: m.index,
-                }, m.encoder)
+                }, m.conn)
             }            
 
         case tea.KeyRunes, tea.KeySpace:
@@ -62,7 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 return m, sendMessage(messages.PositionMessage{
                     Username: m.username,
                     Index: m.index,
-                }, m.encoder)
+                }, m.conn)
             } else if key != " "{
                 m.incorrect += key
             }
@@ -70,11 +68,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
     case messages.TextMessage:
         m.text = msg.Text
-        return m, receiveMessage(m.decoder)
+        return m, receiveMessage(m.conn)
 
     case messages.PositionMessage:
         m.players[msg.Username] = msg.Index
-        return m, receiveMessage(m.decoder)
+        return m, receiveMessage(m.conn)
         
     case errMsg:
         m.err = msg.err
@@ -109,9 +107,9 @@ func (m model) numCorrect() int {
 
 type errMsg struct {err error}
 
-func sendMessage(m messages.Message, encoder *json.Encoder) tea.Cmd {
+func sendMessage(m messages.Message, conn net.Conn) tea.Cmd {
     return func() tea.Msg {
-        err := messages.EncodeMessage(m, encoder)
+        err := messages.EncodeMessage(m, conn)
         if err != nil {
             return errMsg{err}
         }
@@ -119,9 +117,9 @@ func sendMessage(m messages.Message, encoder *json.Encoder) tea.Cmd {
     }
 }
 
-func receiveMessage(decoder *json.Decoder) tea.Cmd {
+func receiveMessage(conn net.Conn) tea.Cmd {
     return func() tea.Msg {
-        msg, err := messages.DecodeMessage(decoder)
+        msg, err := messages.DecodeMessage(conn)
         if err != nil {
             return errMsg{err}
         }
@@ -137,8 +135,7 @@ func InitialModel(roomname string, username string, conn net.Conn) model {
         username: username,
         roomname: roomname,
         players: make(map[string]int),
-        encoder: json.NewEncoder(conn),
-        decoder: json.NewDecoder(conn),
+        conn: conn,
     }
 }
 

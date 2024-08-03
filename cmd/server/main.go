@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 
@@ -31,11 +30,8 @@ func main() {
     //     }
     //     fmt.Print(string(buffer[:mLen]))
     // }
-
-    decoder := json.NewDecoder(conn)
-    encoder := json.NewEncoder(conn)
     for {
-        msg, err := messages.DecodeMessage(decoder)
+        msg, err := messages.DecodeMessage(conn)
         if err != nil {
             panic(err)
         }
@@ -44,7 +40,7 @@ func main() {
             fmt.Print(msg.Index) 
             messages.EncodeMessage(messages.TextMessage{
                 Text: fmt.Sprintf("This is the text being send back from the server. You are currently on index %d", msg.Index),
-            }, encoder)
+            }, conn)
 
         case messages.JoinMessage:
             fmt.Println()

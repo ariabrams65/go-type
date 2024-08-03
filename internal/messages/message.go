@@ -3,6 +3,7 @@ package messages
 import (
     "encoding/json"
     "errors"
+    "net"
 )
 
 type Message interface {
@@ -40,22 +41,22 @@ type frame struct {
     Data json.RawMessage
 }
 
-func EncodeMessage(m Message, encoder *json.Encoder) error {
+func EncodeMessage(m Message, conn net.Conn) error {
     data, err := json.Marshal(m) 
     if err != nil {
         return err
     }
 
-    encoder.Encode(frame{
+    json.NewEncoder(conn).Encode(frame{
         Type: m.Type(),
         Data: data,
     })
     return nil
 }
 
-func DecodeMessage(decoder *json.Decoder) (Message, error) {
+func DecodeMessage(conn net.Conn) (Message, error) {
     var f frame
-    err := decoder.Decode(&f)
+    err := json.NewDecoder(conn).Decode(&f)
     if err != nil {
         return nil, err
     }
