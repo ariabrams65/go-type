@@ -22,14 +22,6 @@ func main() {
     if err != nil {
         panic(err)
     }
-    // buffer := make([]byte, 1024)
-    // for {
-    //     mLen, err := conn.Read(buffer)
-    //     if err != nil {
-    //         panic(err)
-    //     }
-    //     fmt.Print(string(buffer[:mLen]))
-    // }
     for {
         msg, err := messages.DecodeMessage(conn)
         if err != nil {

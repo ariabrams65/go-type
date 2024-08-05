@@ -74,8 +74,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         m.players[msg.Username] = msg.Index
         return m, receiveMessage(m.conn)
         
-    case errMsg:
-        m.err = msg.err
+    case error:
+        m.err = msg
         return m, tea.Quit
         
     }
@@ -105,13 +105,11 @@ func (m model) numCorrect() int {
     return m.index - strings.Count(m.text[:m.index], " ")
 }
 
-type errMsg struct {err error}
-
 func sendMessage(m messages.Message, conn net.Conn) tea.Cmd {
     return func() tea.Msg {
         err := messages.EncodeMessage(m, conn)
         if err != nil {
-            return errMsg{err}
+            return err
         }
         return nil
     }
@@ -121,7 +119,7 @@ func receiveMessage(conn net.Conn) tea.Cmd {
     return func() tea.Msg {
         msg, err := messages.DecodeMessage(conn)
         if err != nil {
-            return errMsg{err}
+            return err
         }
         return msg
     }
