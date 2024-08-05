@@ -37,11 +37,15 @@ func (m TextMessage) Type() string {
 }
 
 type ErrorMessage struct {
-    Error string
+    Description string
 }
 
 func (m ErrorMessage) Type() string {
     return "error"
+}
+
+func (m ErrorMessage) Error() string {
+    return m.Description
 }
 
 type frame struct {
